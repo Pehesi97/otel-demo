@@ -1,0 +1,28 @@
+version: "3.1"
+
+services:
+  frontend:
+    build:
+      context: ./otel-frontend
+      args:
+        - REACT_APP_API_BASE_URL=http://localhost:3001
+    ports:
+      - 3000:80
+
+  backend:
+    build:
+      context: ./backend
+    environment:
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://collector:4318/v1/traces
+    ports:
+      - 3001:3000
+
+  collector:
+    image: otel/opentelemetry-collector-contrib:0.106.0
+    command: "--config /etc/otel-config.yml"
+    volumes:
+      - ./otel-config.yml:/etc/otel-config.yml
+    ports:
+      - 4317:4317
+      - 4318:4318
+      - 55679:55679
